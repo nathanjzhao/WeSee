@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         Log.d(TAG,assetFilePath(this,"mobilenet-v2.pt"));
         model = Module.load(assetFilePath(this,"mobilenet-v2.pt"));
 
-        // initialize text to speech
+        // Initialize text to speech
         tts = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
             @Override
             public void onInit(int status) {
@@ -144,22 +144,11 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         }
     }
 
-    // Small function in order to capitalize each word in a string. This is just for the on-screen text for the detected object to be neater.
-    public static String capitalizeWord(String str){
-        String words[]=str.split("\\s");
-        String capitalizeWord="";
-        for(String w:words){
-            String first=w.substring(0,1);
-            String afterfirst=w.substring(1);
-            capitalizeWord+=first.toUpperCase()+afterfirst+" ";
-        }
-        return capitalizeWord.trim();
-    }
-
-    // Below three functions are for initilalizing and processing the image through the machine learning model.
+   // Mathematical constants we use for preprocessing
     float[] mean = {0.485f, 0.456f, 0.406f};
     float[] std = {0.229f, 0.224f, 0.225f};
 
+    // Preprocess image bitmap so passable throught machine learning model
     public Tensor preprocess(Bitmap bitmap, int size){
 
         bitmap = Bitmap.createScaledBitmap(bitmap,size,size,false);
@@ -167,6 +156,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 
     }
 
+    // Since machine learning models return percentage guesses for each object, we return the object with the highest percentage.
     public int argMax(float[] inputs){
 
         int maxIndex = -1;
@@ -186,6 +176,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         return maxIndex;
     }
 
+    // We pass the bitmap through the model and return the object name the model is most confident in.
     public String predict(Bitmap bitmap){
 
         Tensor tensor = preprocess(bitmap,224);
@@ -196,11 +187,12 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 
         int classIndex = argMax(scores);
 
+        // Since our model returns IDs, we have to find the name using the Constants.java file.
         return Constants.IMAGENET_CLASSES[classIndex];
 
     }
 
-    // Camera functions
+    // Camera functions and permissions for taking pictures, requesting permissions, and showing the camera screen on the app.
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         try {
@@ -284,5 +276,17 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             Log.e("pytorchandroid", "Error process asset " + assetName + " to file path");
         }
         return null;
+    }
+
+    // Small function in order to capitalize each word in a string. This is just for the on-screen text for the detected object to be neater.
+    public static String capitalizeWord(String str){
+        String words[]=str.split("\\s");
+        String capitalizeWord="";
+        for(String w:words){
+            String first=w.substring(0,1);
+            String afterfirst=w.substring(1);
+            capitalizeWord+=first.toUpperCase()+afterfirst+" ";
+        }
+        return capitalizeWord.trim();
     }
 }
