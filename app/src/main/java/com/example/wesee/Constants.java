@@ -2,6 +2,7 @@ package com.example.wesee;
 
 public class Constants {
 
+    // Mappings of IDs to object names for machine learning model.
     public static String[] IMAGENET_CLASSES = new String[]{
             "tench, Tinca tinca",
             "goldfish, Carassius auratus",

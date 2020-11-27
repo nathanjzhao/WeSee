@@ -54,6 +54,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     Camera mCamera;
     boolean mPreviewRunning;
 
+    // Initialize app
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,21 +62,24 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Request camera permission
         if(!hasCameraPermission()) {
             requestCameraPermission();
         }
 
         mTextView = (TextView)findViewById(R.id.text);
 
-        //btncapture = findViewById(R.id.btncapture);
+        // Add functional camera where pictures can be taken. Also shows camera on screen as well
         mSurfaceView = findViewById(R.id.surface_camera);
         mSurfaceHolder = mSurfaceView.getHolder();
         mSurfaceHolder.addCallback(this);
         mSurfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 
+        // Load machine learning model
         Log.d(TAG,assetFilePath(this,"mobilenet-v2.pt"));
         model = Module.load(assetFilePath(this,"mobilenet-v2.pt"));
 
+        // initialize text to speech
         tts = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
             @Override
             public void onInit(int status) {
@@ -97,6 +101,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 
     }
 
+    // Look for when volume button is pressed. If pressed, take a picture and process with machine learning.
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if ((keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || keyCode == KeyEvent.KEYCODE_VOLUME_UP) && mPreviewRunning == true){
@@ -106,6 +111,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         return true;
     }
 
+    // Function which takes picture and processes, while also triggering the TTS to name the object.
     Camera.PictureCallback mPictureCallback = new Camera.PictureCallback() {
         public void onPictureTaken(byte[] imageData, Camera c) {
             Log.d(TAG,"Picture Taken");
@@ -128,6 +134,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         }
     };
 
+    // Function for removing TTS when app is closed.
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -137,6 +144,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         }
     }
 
+    // Small function in order to capitalize each word in a string. This is just for the on-screen text for the detected object to be neater.
     public static String capitalizeWord(String str){
         String words[]=str.split("\\s");
         String capitalizeWord="";
@@ -148,6 +156,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         return capitalizeWord.trim();
     }
 
+    // Below three functions are for initilalizing and processing the image through the machine learning model.
     float[] mean = {0.485f, 0.456f, 0.406f};
     float[] std = {0.229f, 0.224f, 0.225f};
 
@@ -191,6 +200,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 
     }
 
+    // Camera functions
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         try {
@@ -256,6 +266,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         }
     }
 
+    // Function allows for easy finding of the machine learning model filepath.
     public static String assetFilePath(Context context, String assetName) {
         File file = new File(context.getFilesDir(), assetName);
 
